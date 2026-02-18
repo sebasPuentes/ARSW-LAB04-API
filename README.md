@@ -134,7 +134,7 @@ Swagger UI nos permite:
 
 Hacemos una peticion GET al punto modificado:
 
-![alt text](docs/addPunto.png)
+![alt text](docs/addPuntoEvidencia.png)
 
 ---
 
