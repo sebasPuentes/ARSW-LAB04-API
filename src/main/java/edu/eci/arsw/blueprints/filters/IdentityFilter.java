@@ -5,7 +5,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Default filter: returns the blueprint unchanged.
- * This matches the baseline behavior of the reference lab before students implement custom filters.
+ * Always registered. When a profiled filter (redundancy, undersampling) is active,
+ * that filter is marked @Primary and takes precedence over this one.
  */
 @Component
 public class IdentityFilter implements BlueprintsFilter {

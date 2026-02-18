@@ -5,11 +5,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 
 @Entity
@@ -26,8 +30,9 @@ public class Blueprint {
     @Column(nullable = false)
     private String name;
 
-    //PENDIENTE
-    private final List<Point> points = new ArrayList<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "blueprint_points", joinColumns = @JoinColumn(name = "blueprint_id"))
+    private List<Point> points = new ArrayList<>();
 
     public Blueprint() {
     }
@@ -38,17 +43,32 @@ public class Blueprint {
         if (pts != null) points.addAll(pts);
     }
 
-    public Long getId() { return id; }
-    public String getAuthor() { return author; }
-    public String getName() { return name; }
-    public List<Point> getPoints() { return Collections.unmodifiableList(points); }
+    public Long getId() { 
+        return id; 
+    }
 
-    public void addPoint(Point p) { points.add(p); }
+    public String getAuthor() { 
+        return author; 
+    }
+
+    public String getName() { 
+        return name; 
+    }
+    
+    public List<Point> getPoints() { 
+        return Collections.unmodifiableList(points); 
+    }
+
+    public void addPoint(Point p) { 
+        points.add(p); 
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Blueprint bp)) return false;
+        if (this == o) 
+            return true;
+        if (!(o instanceof Blueprint bp)) 
+            return false;
         return Objects.equals(author, bp.author) && Objects.equals(name, bp.name);
     }
 

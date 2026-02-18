@@ -1,124 +1,203 @@
-## Laboratorio #4 – REST API Blueprints (Java 21 / Spring Boot 3.3.x)
-# Escuela Colombiana de Ingeniería – Arquitecturas de Software  
+# ARSW LAB 04 - Blueprints REST API
+
+API REST para la gestión de planos (blueprints) desarrollada con Spring Boot 3.3.x, Java 21, PostgreSQL y documentada con OpenAPI/Swagger.
+
+## Tabla de Contenidos
+
+- [Descripción](#descripción)
+- [Requisitos Previos](#requisitos-previos)
+- [Instalación y Ejecución](#instalación-y-ejecución)
+- [Documentación de la API](#documentación-de-la-api)
+- [Evidencias de Pruebas](#evidencias-de-pruebas)
+- [Buenas Prácticas Aplicadas](#buenas-prácticas-aplicadas)
+- [Tecnologías Utilizadas](#tecnologías-utilizadas)
 
 ---
 
-## 📋 Requisitos
-- Java 21
-- Maven 3.9+
+## Descripción
 
-## ▶️ Ejecución del proyecto
+Este proyecto implementa una API REST completa para la gestión de blueprints (planos), permitiendo:
+
+- Crear, consultar y modificar blueprints
+- Asociar blueprints a autores
+- Agregar puntos a blueprints existentes
+- Aplicar filtros
+- Persistencia en base de datos PostgreSQL
+- Documentación con Swagger UI
+
+---
+
+## Requisitos Previos
+
+Tener instalado:
+
+- **Java 21**
+- **Maven 3.8+**
+- **Docker**
+
+---
+
+## Instalación y Ejecución
+
+### Opción 1: Usando Docker Compose (Recomendado)
+
+1. **Clone el repositorio**
+
 ```bash
-mvn clean install
-mvn spring-boot:run
+git clone https://github.com/sebasPuentes/ARSW-LAB04-API
+cd ARSW-LAB04-API
 ```
-Probar con `curl`:
+
+2. **Inicie la aplicación con Docker Compose**
+
 ```bash
-curl -s http://localhost:8080/blueprints | jq
-curl -s http://localhost:8080/blueprints/john | jq
-curl -s http://localhost:8080/blueprints/john/house | jq
-curl -i -X POST http://localhost:8080/blueprints -H 'Content-Type: application/json' -d '{ "author":"john","name":"kitchen","points":[{"x":1,"y":1},{"x":2,"y":2}] }'
-curl -i -X PUT  http://localhost:8080/blueprints/john/kitchen/points -H 'Content-Type: application/json' -d '{ "x":3,"y":3 }'
+docker-compose up -d
 ```
 
-> Si deseas activar filtros de puntos (reducción de redundancia, *undersampling*, etc.), implementa nuevas clases que implementen `BlueprintsFilter` y cámbialas por `IdentityFilter` con `@Primary` o usando configuración de Spring.
----
+Este comando:
+- Construye la imagen de la aplicación
+- Inicia un contenedor de PostgreSQL
+- Inicia la aplicación Spring Boot
+- Expone la API en `http://localhost:8080`
 
-Abrir en navegador:  
-- Swagger UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)  
-- OpenAPI JSON: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)  
+3. **Verifique que los contenedores estén corriendo**
 
----
-
-## 🗂️ Estructura de carpetas (arquitectura)
-
+```bash
+docker-compose ps
 ```
-src/main/java/edu/eci/arsw/blueprints
-  ├── model/         # Entidades de dominio: Blueprint, Point
-  ├── persistence/   # Interfaz + repositorios (InMemory, Postgres)
-  │    └── impl/     # Implementaciones concretas
-  ├── services/      # Lógica de negocio y orquestación
-  ├── filters/       # Filtros de procesamiento (Identity, Redundancy, Undersampling)
-  ├── controllers/   # REST Controllers (BlueprintsAPIController)
-  └── config/        # Configuración (Swagger/OpenAPI, etc.)
+---
+
+## Documentación de la API
+
+### Acceso a Swagger UI
+
+Una vez iniciada la aplicación, acceda a la documentación:
+
+**URL:** `http://localhost:8080/swagger-ui.html`
+
+Swagger UI nos permite:
+- Visualizar todos los endpoints disponibles
+- Probar las operaciones directamente desde el navegador
+- Revisar códigos de estado HTTP y descripciones
+
+### Endpoints Disponibles
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/v1/blueprints` | Obtener todos los blueprints |
+| GET | `/api/v1/blueprints/{author}` | Obtener blueprints por autor |
+| GET | `/api/v1/blueprints/{author}/{bpname}` | Obtener un blueprint específico |
+| POST | `/api/v1/blueprints` | Crear un nuevo blueprint |
+| PUT | `/api/v1/blueprints/{author}/{bpname}/points` | Agregar punto a un blueprint |
+
+---
+
+## Evidencias de Pruebas
+
+### Consultas
+
+#### 1. POST - Crear un nuevo blueprint
+
+**Descripción:** Creación de un blueprint con autor, nombre y conjunto de puntos.
+
+**Ejemplo:**
+```json
+{
+  "author": "john_doe",
+  "name": "house_design",
+  "points": [
+    {"x": 10, "y": 20},
+    {"x": 30, "y": 40}
+  ]
+}
 ```
 
-> Esta separación sigue el patrón **capas lógicas** (modelo, persistencia, servicios, controladores), facilitando la extensión hacia nuevas tecnologías o fuentes de datos.
+![alt text](docs/post.png)
+
+#### 2. GET - Obtener blueprints por autor
+
+**Descripción:** Consulta que filtra blueprints según el autor especificado.
+
+![alt text](docs/porAutor.png)
+
+#### 3. GET - Obtener todos los blueprints
+
+**Descripción:** Consulta que retorna todos los blueprints almacenados en el sistema.
+
+![alt text](docs/porTodos.png)
+
+#### 4. PUT - Agregar punto a un blueprint existente
+
+**Descripción:** Adición de un nuevo punto a un blueprint previamente creado.
+
+![alt text](docs/addPunto.png)
+
+Hacemos una peticion GET al punto modificado:
+
+![alt text](docs/addPunto.png)
 
 ---
 
-## 📖 Actividades del laboratorio
+### Verificación en Base de Datos
 
-### 1. Familiarización con el código base
-- Revisa el paquete `model` con las clases `Blueprint` y `Point`.  
-- Entiende la capa `persistence` con `InMemoryBlueprintPersistence`.  
-- Analiza la capa `services` (`BlueprintsServices`) y el controlador `BlueprintsAPIController`.
+#### Conexión a PostgreSQL
 
-### 2. Migración a persistencia en PostgreSQL
-- Configura una base de datos PostgreSQL (puedes usar Docker).  
-- Implementa un nuevo repositorio `PostgresBlueprintPersistence` que reemplace la versión en memoria.  
-- Mantén el contrato de la interfaz `BlueprintPersistence`.  
-
-### 3. Buenas prácticas de API REST
-- Cambia el path base de los controladores a `/api/v1/blueprints`.  
-- Usa **códigos HTTP** correctos:  
-  - `200 OK` (consultas exitosas).  
-  - `201 Created` (creación).  
-  - `202 Accepted` (actualizaciones).  
-  - `400 Bad Request` (datos inválidos).  
-  - `404 Not Found` (recurso inexistente).  
-- Implementa una clase genérica de respuesta uniforme:
-  ```java
-  public record ApiResponse<T>(int code, String message, T data) {}
-  ```
-  Ejemplo JSON:
-  ```json
-  {
-    "code": 200,
-    "message": "execute ok",
-    "data": { "author": "john", "name": "house", "points": [...] }
-  }
-  ```
-
-### 4. OpenAPI / Swagger
-- Configura `springdoc-openapi` en el proyecto.  
-- Expón documentación automática en `/swagger-ui.html`.  
-- Anota endpoints con `@Operation` y `@ApiResponse`.
-
-### 5. Filtros de *Blueprints*
-- Implementa filtros:
-  - **RedundancyFilter**: elimina puntos duplicados consecutivos.  
-  - **UndersamplingFilter**: conserva 1 de cada 2 puntos.  
-- Activa los filtros mediante perfiles de Spring (`redundancy`, `undersampling`).  
+Para verificar la persistencia de datos, puede usar DBeaver.
 
 ---
 
-## ✅ Entregables
+## Buenas Prácticas Aplicadas
 
-1. Repositorio en GitHub con:  
-   - Código fuente actualizado.  
-   - Configuración PostgreSQL (`application.yml` o script SQL).  
-   - Swagger/OpenAPI habilitado.  
-   - Clase `ApiResponse<T>` implementada.  
+### 1. Documentación con OpenAPI/Swagger
 
-2. Documentación:  
-   - Informe de laboratorio con instrucciones claras.  
-   - Evidencia de consultas en Swagger UI y evidencia de mensajes en la base de datos.  
-   - Breve explicación de buenas prácticas aplicadas.  
+Uso de anotaciones `@Operation`y `@ApiResponse` para:
+- Documentar cada endpoint
+- Describir parámetros y respuestas esperadas
+
+### 2. Repository
+
+Uso de interfaces de persistencia (`JpaRepository`):
+
+- `PostgresBlueprintPersistence` para la base de datos con métodos predefinidos como `save`.
+
+### 3. Inyección de Dependencias
+
+Inyección por constructor:
+```java
+public BlueprintsAPIController(BlueprintsServices services) {
+    this.services = services;
+}
+```
+Facilitando testing, acoplamiento y mantenibilidad.
+
+### 4. Containerización
+
+Uso de Docker para:
+- Entorno reproducible
+- Fácil despliegue
+- Gestión simplificada de PostgreSQL
 
 ---
 
-## 📊 Criterios de evaluación
+## Tecnologías Utilizadas
 
-| Criterio | Peso |
-|----------|------|
-| Diseño de API (versionamiento, DTOs, ApiResponse) | 25% |
-| Migración a PostgreSQL (repositorio y persistencia correcta) | 25% |
-| Uso correcto de códigos HTTP y control de errores | 20% |
-| Documentación con OpenAPI/Swagger + README | 15% |
-| Pruebas básicas (unitarias o de integración) | 15% |
+- **Spring Boot 3.3.9** - Framework
+- **Java 21** - Lenguaje de programación
+- **Maven** - Gestión de dependencias y build
+- **PostgreSQL** - Base de datos relacional
+- **Spring Data JPA** - Capa de persistencia
+- **SpringDoc OpenAPI 2.6.0** - Documentación API (Swagger)
+- **Docker** - Containerización
 
-**Bonus**:  
+---
 
-- Imagen de contenedor (`spring-boot:build-image`).  
-- Métricas con Actuator.  
+## Autor
+
+**Juan Sebastian Puentes Julio**
+
+---
+
+**ARSW - Arquitecturas de Software**
+
+**Escuela Colombiana de Ingeniería Julio Garavito**
+
