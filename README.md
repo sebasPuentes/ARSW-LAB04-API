@@ -39,8 +39,6 @@ Tener instalado:
 
 ## Instalación y Ejecución
 
-### Opción 1: Usando Docker Compose (Recomendado)
-
 1. **Clone el repositorio**
 
 ```bash
