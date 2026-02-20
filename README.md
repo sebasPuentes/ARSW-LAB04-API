@@ -142,6 +142,8 @@ Hacemos una peticion GET al punto modificado:
 
 Para verificar la persistencia de datos, puede usar DBeaver.
 
+![alt text](docs/dbeaver.png)
+
 ---
 
 ## Buenas Prácticas Aplicadas
@@ -174,6 +176,14 @@ Uso de Docker para:
 - Entorno reproducible
 - Fácil despliegue
 - Gestión simplificada de PostgreSQL
+
+---
+
+### Pruebas
+
+Evidencia:
+
+![alt text](docs/tests.png)
 
 ---
 
